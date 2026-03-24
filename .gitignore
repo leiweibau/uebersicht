@@ -20,6 +20,8 @@ DerivedData
 server/node_modules
 
 # build files
+dist/
+server/release/
 server/release/server.js
 server/release/public/client.js
 server/release/node_modules

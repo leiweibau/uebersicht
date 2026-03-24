@@ -57,7 +57,5 @@
 	<true/>
 	<key>OSAScriptingDefinition</key>
 	<string>Uebersicht.sdef</string>
-	<key>SUFeedURL</key>
-	<string>https://raw.githubusercontent.com/felixhageloh/uebersicht/gh-pages/updates.xml.rss</string>
 </dict>
 </plist>

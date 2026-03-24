@@ -21,6 +21,17 @@
 
 int const PORT = 41416;
 
+static NSString* UBCurrentBinaryArchitecture(void)
+{
+#if defined(__aarch64__) || defined(__arm64__)
+    return @"arm64";
+#elif defined(__x86_64__)
+    return @"intel";
+#else
+    return @"unknown";
+#endif
+}
+
 @implementation UBAppDelegate {
     NSStatusItem* statusBarItem;
     NSTask* widgetServer;
@@ -328,6 +339,18 @@ int const PORT = 41416;
     [preferences showWindow:nil];
     [NSApp activateIgnoringOtherApps:YES];
     [preferences.window makeKeyAndOrderFront:self];
+}
+
+- (IBAction)showAbout:(id)sender
+{
+    NSBundle* bundle = [NSBundle mainBundle];
+    NSString* version = [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    NSString* architecture = UBCurrentBinaryArchitecture();
+
+    [NSApp orderFrontStandardAboutPanelWithOptions:@{
+        NSAboutPanelOptionApplicationVersion: [NSString stringWithFormat:@"%@ (%@)", version, architecture],
+        NSAboutPanelOptionVersion: @""
+    }];
 }
 
 - (IBAction)openWidgetDir:(id)sender

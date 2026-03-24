@@ -22,6 +22,7 @@
 - (void)interactionDidChange;
 - (void)screensChanged:(NSDictionary*)screens;
 - (IBAction)showPreferences:(id)sender;
+- (IBAction)showAbout:(id)sender;
 - (IBAction)openWidgetDir:(id)sender;
 - (IBAction)showDebugConsole:(id)sender;
 - (IBAction)refreshWidgets:(id)sender;

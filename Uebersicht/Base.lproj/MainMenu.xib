@@ -20,7 +20,7 @@
                             <menuItem title="About Übersicht" id="58">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="orderFrontStandardAboutPanel:" target="-2" id="142"/>
+                                    <action selector="showAbout:" target="494" id="142"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="236">
@@ -659,7 +659,7 @@
                 <menuItem title="About Übersicht" id="YQt-G2-uKH">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <connections>
-                        <action selector="orderFrontStandardAboutPanel:" target="-2" id="VpR-KV-QA6"/>
+                        <action selector="showAbout:" target="494" id="VpR-KV-QA6"/>
                     </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="LqA-wK-nbB"/>

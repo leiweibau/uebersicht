@@ -19,7 +19,6 @@ Date: 2026-03-05
 
 ## Subcomponent Version Updates
 - CocoaPods:
-  - `Sparkle` -> `2.0.0`
   - `SocketRocket` -> `0.5.1`
   - `CocoaPods` toolchain lock -> `1.16.2`
 - Server/runtime dependencies (selected):
