@@ -15,5 +15,6 @@
 - (NSDictionary*)get:(NSString*)widgetId;
 - (NSDictionary*)getSettings:(NSString*)widgetId;
 - (NSArray*)sortedWidgets;
+- (void)migrateLegacyScreenIds:(NSDictionary*)screenIdMap;
 
 @end

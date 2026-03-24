@@ -16,5 +16,8 @@
 - (id)initWithChangeListener:(id)target;
 - (void)handleScreenChange:(id)sender;
 - (void)syncScreens;
+- (NSString*)screenIdForScreen:(NSScreen*)screen;
+- (NSScreen*)screenForId:(NSString*)screenId;
+- (NSDictionary*)legacyScreenIdMap;
 
 @end

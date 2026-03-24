@@ -7,6 +7,7 @@
 //
 
 #import "UBWindowsController.h"
+#import "UBScreensController.h"
 #import "UBWindowGroup.h"
 #import "WKInspector.h"
 #import "WKView.h"
@@ -17,13 +18,15 @@
 
 @implementation UBWindowsController {
     NSMutableDictionary* windows;
+    UBScreensController* screensController;
 }
 
-- (id)init
+- (id)initWithScreensController:(UBScreensController*)theScreensController
 {
     self = [super init];
     if (self) {
         windows = [[NSMutableDictionary alloc] initWithCapacity:42];
+        screensController = theScreensController;
     }
     return self;
 }
@@ -37,7 +40,7 @@
     NSMutableArray* obsoleteScreens = [[windows allKeys] mutableCopy];
     UBWindowGroup* windowGroup;
     
-    for(NSNumber* screenId in screens) {
+    for(NSString* screenId in screens) {
         if (![windows objectForKey:screenId]) {
             windowGroup = [[UBWindowGroup alloc]
                 initWithInteractionEnabled: interactionEnabled
@@ -55,7 +58,7 @@
         [obsoleteScreens removeObject:screenId];
     }
     
-    for (NSNumber* screenId in obsoleteScreens) {
+    for (NSString* screenId in obsoleteScreens) {
         [windows[screenId] close];
         [windows removeObjectForKey:screenId];
     }
@@ -63,7 +66,7 @@
     NSLog(@"using %lu screens", (unsigned long)[windows count]);
 }
 
-- (NSRect)screenRect:(NSNumber*)screenId
+- (NSRect)screenRect:(NSString*)screenId
 {
     NSScreen* screen = [self getNSScreen:screenId];
     
@@ -85,20 +88,14 @@
     );
 }
 
-- (NSScreen*)getNSScreen:(NSNumber*)screenId
+- (NSScreen*)getNSScreen:(NSString*)screenId
 {
-    for (NSScreen* screen in [NSScreen screens]) {
-        if ([screen deviceDescription][@"NSScreenNumber"] == screenId) {
-            return screen;
-        }
-    };
-    
-    return nil;
+    return [screensController screenForId:screenId];
 }
 
 - (void)reloadAll
 {
-    for (NSNumber* screenId in windows) {
+    for (NSString* screenId in windows) {
         UBWindowGroup* window = windows[screenId];
         [window reload];
     }
@@ -113,7 +110,7 @@
 }
 
 
-- (void)showDebugConsolesForScreen:(NSNumber*)screenId
+- (void)showDebugConsolesForScreen:(NSString*)screenId
 {
     NSWindow* window;
     window = [(UBWindowGroup*)windows[screenId] foreground];
@@ -158,19 +155,19 @@
 
 - (void)workspaceChanged
 {
-    for (NSNumber* screenId in windows) {
+    for (NSString* screenId in windows) {
         [windows[screenId] workspaceChanged];
     }
 }
 
 - (void)wallpaperChanged
 {
-    for (NSNumber* screenId in windows) {
+    for (NSString* screenId in windows) {
         [windows[screenId] wallpaperChanged];
     }
 }
 
-- (NSURL*)screenUrl:(NSNumber*)screenId baseUrl:(NSURL*)baseUrl
+- (NSURL*)screenUrl:(NSString*)screenId baseUrl:(NSURL*)baseUrl
 {
     return [baseUrl
         URLByAppendingPathComponent:[NSString

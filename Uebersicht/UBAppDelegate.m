@@ -67,7 +67,9 @@ static NSString* UBCurrentBinaryArchitecture(void)
         initWithChangeListener:self
     ];
     
-    windowsController = [[UBWindowsController alloc] init];
+    windowsController = [[UBWindowsController alloc]
+        initWithScreensController:screensController
+    ];
     
     widgetsController = [[UBWidgetsController alloc]
         initWithMenu: statusBarMenu
@@ -144,9 +146,9 @@ static NSString* UBCurrentBinaryArchitecture(void)
         // note that these might be called several times
         if ([output rangeOfString:@"server started"].location != NSNotFound) {
             [[UBWebSocket sharedSocket] open:[self serverUrl:@"ws"]];
-            [self->widgetsStore reset: [self fetchState]];
-            // this will trigger a render
             [self->screensController syncScreens];
+            [self->widgetsStore reset: [self fetchState]];
+            [self->widgetsStore migrateLegacyScreenIds:[self->screensController legacyScreenIdMap]];
 
         } else if ([output rangeOfString:@"EADDRINUSE"].location != NSNotFound) {
             self->portOffset++;
@@ -373,9 +375,9 @@ static NSString* UBCurrentBinaryArchitecture(void)
 
 - (IBAction)showDebugConsole:(id)sender
 {
-    NSNumber* currentScreen = [[NSScreen mainScreen]
-        deviceDescription
-    ][@"NSScreenNumber"];
+    NSString* currentScreen = [screensController
+        screenIdForScreen:[NSScreen mainScreen]
+    ];
     
     [windowsController showDebugConsolesForScreen:currentScreen];
 }

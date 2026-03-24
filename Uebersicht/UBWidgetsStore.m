@@ -208,7 +208,7 @@
     [widgets removeObjectForKey:widgetId];
 }
 
-- (void)selectScreen:(NSNumber*)screenId forWidget:(NSString*)widgetId
+- (void)selectScreen:(NSString*)screenId forWidget:(NSString*)widgetId
 {
     NSArray* screens = settings[widgetId][@"screens"];
     
@@ -217,18 +217,67 @@
     }
 }
 
-- (void)deselectScreen:(NSNumber*)screenId forWidget:(NSString*)widgetId
+- (void)deselectScreen:(NSString*)screenId forWidget:(NSString*)widgetId
 {
     NSArray* screens = settings[widgetId][@"screens"];
     NSPredicate *withoutScreen = [NSPredicate
         predicateWithBlock: ^BOOL(id s, NSDictionary * _) {
-            return s != screenId;
+            return ![s isEqual:screenId];
         }
     ];
     
     settings[widgetId][@"screens"] = [screens
         filteredArrayUsingPredicate: withoutScreen
     ];
+}
+
+- (void)migrateLegacyScreenIds:(NSDictionary*)screenIdMap
+{
+    BOOL didMigrate = NO;
+    
+    for (NSString* widgetId in settings) {
+        NSMutableDictionary* widgetSettings = settings[widgetId];
+        NSArray* widgetScreens = widgetSettings[@"screens"];
+        
+        if (![widgetScreens isKindOfClass:[NSArray class]]) {
+            continue;
+        }
+        
+        NSMutableArray* migratedScreens = [[NSMutableArray alloc]
+            initWithCapacity:widgetScreens.count
+        ];
+        BOOL didChangeWidget = NO;
+        
+        for (id screenId in widgetScreens) {
+            if ([screenId isKindOfClass:[NSString class]]) {
+                if (![migratedScreens containsObject:screenId]) {
+                    [migratedScreens addObject:screenId];
+                }
+                continue;
+            }
+            
+            if ([screenId isKindOfClass:[NSNumber class]]) {
+                NSString* stableScreenId = screenIdMap[screenId];
+                if (stableScreenId) {
+                    didChangeWidget = YES;
+                    if (![migratedScreens containsObject:stableScreenId]) {
+                        [migratedScreens addObject:stableScreenId];
+                    }
+                } else if (![migratedScreens containsObject:screenId]) {
+                    [migratedScreens addObject:screenId];
+                }
+            }
+        }
+        
+        if (didChangeWidget) {
+            widgetSettings[@"screens"] = migratedScreens;
+            didMigrate = YES;
+        }
+    }
+    
+    if (didMigrate) {
+        [self notifyChange];
+    }
 }
 
 

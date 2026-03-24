@@ -15,6 +15,8 @@ int const MAX_DISPLAYS = 42;
 @implementation UBScreensController {
     id listener;
     UBDispatcher* dispatcher;
+    NSMutableDictionary* currentScreens;
+    NSMutableDictionary* legacyScreenIds;
 }
 
 @synthesize screens;
@@ -25,6 +27,8 @@ int const MAX_DISPLAYS = 42;
     self = [super init];
     if (self) {
         screens = [[NSMutableDictionary alloc] initWithCapacity:MAX_DISPLAYS];
+        currentScreens = [[NSMutableDictionary alloc] initWithCapacity:MAX_DISPLAYS];
+        legacyScreenIds = [[NSMutableDictionary alloc] initWithCapacity:MAX_DISPLAYS];
         listener = target;
         dispatcher = [[UBDispatcher alloc] init];
         
@@ -47,20 +51,22 @@ int const MAX_DISPLAYS = 42;
         initWithCapacity:MAX_DISPLAYS
     ];
     
+    [currentScreens removeAllObjects];
+    [legacyScreenIds removeAllObjects];
     [screens removeAllObjects];
     NSMutableArray *ids = [[NSMutableArray alloc] 
         initWithCapacity: [NSScreen screens].count
     ];
     
     int i = 0;
-    NSNumber* screenId;
     for(NSScreen* screen in [NSScreen screens]) {
-        screenId = [screen deviceDescription][@"NSScreenNumber"];
+        NSNumber* displayId = [screen deviceDescription][@"NSScreenNumber"];
+        NSString* screenId = [self screenIdForScreen:screen];
             
         if (@available(macOS 10.15, *)) {
             name = [screen localizedName];
         } else {
-            name = [self screenNameForDisplay: [screenId intValue]];
+            name = [self screenNameForDisplay: [displayId intValue]];
         }
         if (!name)
             name = [NSString
@@ -78,6 +84,8 @@ int const MAX_DISPLAYS = 42;
         }
     
         screens[screenId] = name;
+        currentScreens[screenId] = screen;
+        legacyScreenIds[displayId] = screenId;
         [ids addObject: screenId];
         
         i++;
@@ -104,6 +112,30 @@ int const MAX_DISPLAYS = 42;
 {
     [self updateScreens];
     [listener screensChanged:screens];
+}
+
+- (NSString*)screenIdForScreen:(NSScreen*)screen
+{
+    NSNumber* displayId = [screen deviceDescription][@"NSScreenNumber"];
+    CGDirectDisplayID directDisplayId = (CGDirectDisplayID)[displayId unsignedIntValue];
+    CFUUIDRef displayUUID = CGDisplayCreateUUIDFromDisplayID(directDisplayId);
+    if (displayUUID != nil) {
+        NSString* uuidString = [(__bridge NSUUID*)displayUUID UUIDString];
+        CFRelease(displayUUID);
+        return uuidString;
+    }
+    
+    return [NSString stringWithFormat:@"display-%u", directDisplayId];
+}
+
+- (NSScreen*)screenForId:(NSString*)screenId
+{
+    return currentScreens[screenId];
+}
+
+- (NSDictionary*)legacyScreenIdMap
+{
+    return [legacyScreenIds copy];
 }
 
 

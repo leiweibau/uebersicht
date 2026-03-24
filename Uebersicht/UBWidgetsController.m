@@ -237,7 +237,7 @@ static NSInteger const WIDGET_MENU_ITEM_TAG = 42;
     [menu insertItem:newItem atIndex:0];
     
     int i = 0;
-    for(NSNumber* screenId in screensController.sortedScreens) {
+    for(NSString* screenId in screensController.sortedScreens) {
         name = screensController.screens[screenId];
         title = [NSString
             stringWithFormat:NSLocalizedString(@"Show on %@", nil), name
@@ -361,7 +361,7 @@ static NSInteger const WIDGET_MENU_ITEM_TAG = 42;
 {
     NSMenuItem* menuItem = (NSMenuItem*)sender;
     NSDictionary* data = [menuItem representedObject];
-    NSNumber* screenId = data[@"screenId"];
+    NSString* screenId = data[@"screenId"];
     NSDictionary* widgetSettings = [widgets getSettings:data[@"widgetId"]];
     NSString* message;
     

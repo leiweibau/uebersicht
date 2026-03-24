@@ -7,11 +7,13 @@
 //
 
 #import <Cocoa/Cocoa.h>
+@class UBScreensController;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface UBWindowsController : NSObject
 
+- (id)initWithScreensController:(UBScreensController*)screensController;
 
 - (void)updateWindows:(NSDictionary*)screens
               baseUrl:(NSURL*)baseUrl
@@ -22,8 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)closeAll;
 - (void)workspaceChanged;
 - (void)wallpaperChanged;
-- (void)showDebugConsolesForScreen:(NSNumber*)screenId;
-- (NSScreen*)getNSScreen:(NSNumber*)screenId;
+- (void)showDebugConsolesForScreen:(NSString*)screenId;
+- (NSScreen*)getNSScreen:(NSString*)screenId;
 
 @end
 
