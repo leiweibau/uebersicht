@@ -19,6 +19,7 @@
 @implementation UBWindowsController {
     NSMutableDictionary* windows;
     UBScreensController* screensController;
+    NSHashTable* monitoredDebugWindows;
 }
 
 - (id)initWithScreensController:(UBScreensController*)theScreensController
@@ -27,6 +28,7 @@
     if (self) {
         windows = [[NSMutableDictionary alloc] initWithCapacity:42];
         screensController = theScreensController;
+        monitoredDebugWindows = [NSHashTable weakObjectsHashTable];
     }
     return self;
 }
@@ -106,6 +108,7 @@
     for (UBWindowGroup* window in [windows allValues]) {
         [window close];
     }
+    [monitoredDebugWindows removeAllObjects];
     [windows removeAllObjects];
 }
 
@@ -122,17 +125,7 @@
 
 - (void)showDebugConsoleForWindow:(NSWindow*)window
 {
-    WKPageRef page = NULL;
-    SEL pageForTesting = @selector(_pageForTesting);
-    
-    if ([window.contentView.subviews[0] isKindOfClass:[WKView class]]) {
-        WKView* webview = window.contentView.subviews[0];
-        page = webview.pageRef;
-    } else if ([window.contentView respondsToSelector:pageForTesting]) {
-        page = (__bridge WKPageRef)([window.contentView
-            performSelector: pageForTesting
-        ]);
-    }
+    WKPageRef page = [self pageForWindow:window];
     
     if (page) {
         WKInspectorRef inspector = WKPageGetInspector(page);
@@ -145,12 +138,76 @@
             withObject: (__bridge id)(inspector)
             afterDelay: 0
         ];
+
+        if (![monitoredDebugWindows containsObject:window]) {
+            [monitoredDebugWindows addObject:window];
+            [self
+                performSelector:@selector(closeHiddenDebugConsoleForWindow:)
+                withObject:window
+                afterDelay:2.0
+            ];
+        }
     }
 }
 
 - (void)detachInspector:(WKInspectorRef)inspector
 {
      WKInspectorDetach(inspector);
+}
+
+- (WKPageRef)pageForWindow:(NSWindow*)window
+{
+    if (!window || !window.contentView) {
+        return NULL;
+    }
+
+    SEL pageForTesting = @selector(_pageForTesting);
+
+    if (window.contentView.subviews.count > 0) {
+        NSView* firstSubview = window.contentView.subviews[0];
+        if ([firstSubview isKindOfClass:[WKView class]]) {
+            return ((WKView*)firstSubview).pageRef;
+        }
+    }
+
+    if ([window.contentView respondsToSelector:pageForTesting]) {
+        return (__bridge WKPageRef)([window.contentView performSelector:pageForTesting]);
+    }
+
+    return NULL;
+}
+
+- (void)closeHiddenDebugConsoleForWindow:(NSWindow*)window
+{
+    if (!window) {
+        return;
+    }
+
+    WKPageRef page = [self pageForWindow:window];
+    if (!page) {
+        [monitoredDebugWindows removeObject:window];
+        return;
+    }
+
+    WKInspectorRef inspector = WKPageGetInspector(page);
+    if (!inspector) {
+        [monitoredDebugWindows removeObject:window];
+        return;
+    }
+
+    if (WKInspectorIsVisible(inspector)) {
+        [self
+            performSelector:@selector(closeHiddenDebugConsoleForWindow:)
+            withObject:window
+            afterDelay:1.0
+        ];
+        return;
+    }
+
+    if (WKInspectorIsConnected(inspector)) {
+        WKInspectorClose(inspector);
+    }
+    [monitoredDebugWindows removeObject:window];
 }
 
 - (void)workspaceChanged

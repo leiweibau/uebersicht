@@ -127,6 +127,9 @@ static NSString* UBCurrentBinaryArchitecture(void)
 {
     NSURL *urlPath = [[self serverUrl:@"http"] URLByAppendingPathComponent: @"state/"];
     NSData *jsonData = [NSData dataWithContentsOfURL:urlPath];
+    if (!jsonData) {
+        return nil;
+    }
     NSError *error = nil;
     NSDictionary *dataDictionary = [NSJSONSerialization
         JSONObjectWithData: jsonData
@@ -135,6 +138,16 @@ static NSString* UBCurrentBinaryArchitecture(void)
     ];
     if (error) NSLog(@"%@", error);
     return dataDictionary;
+}
+
+- (void)syncWidgetStateFromServer
+{
+    NSDictionary* state = [self fetchState];
+    if (![state isKindOfClass:[NSDictionary class]]) {
+        return;
+    }
+    [widgetsStore reset:state];
+    [widgetsStore migrateLegacyScreenIds:[screensController legacyScreenIdMap]];
 }
 
 - (void)startUp
@@ -147,8 +160,11 @@ static NSString* UBCurrentBinaryArchitecture(void)
         if ([output rangeOfString:@"server started"].location != NSNotFound) {
             [[UBWebSocket sharedSocket] open:[self serverUrl:@"ws"]];
             [self->screensController syncScreens];
-            [self->widgetsStore reset: [self fetchState]];
-            [self->widgetsStore migrateLegacyScreenIds:[self->screensController legacyScreenIdMap]];
+            [self syncWidgetStateFromServer];
+            // The server can report "started" before initial widget discovery is fully replayed.
+            // A short follow-up resync avoids an empty menu/desktop when early socket events are missed.
+            [self performSelector:@selector(syncWidgetStateFromServer) withObject:nil afterDelay:0.5];
+            [self performSelector:@selector(syncWidgetStateFromServer) withObject:nil afterDelay:1.5];
 
         } else if ([output rangeOfString:@"EADDRINUSE"].location != NSNotFound) {
             self->portOffset++;
@@ -348,11 +364,42 @@ static NSString* UBCurrentBinaryArchitecture(void)
     NSBundle* bundle = [NSBundle mainBundle];
     NSString* version = [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
     NSString* architecture = UBCurrentBinaryArchitecture();
+    NSRunningApplication* currentApp = [NSRunningApplication currentApplication];
+    NSString* appName = [bundle objectForInfoDictionaryKey:@"CFBundleName"];
+    NSString* aboutName = [NSString stringWithFormat:@"%@ (Fork)", appName];
 
+    [currentApp activateWithOptions:(NSApplicationActivateIgnoringOtherApps | NSApplicationActivateAllWindows)];
     [NSApp orderFrontStandardAboutPanelWithOptions:@{
-        NSAboutPanelOptionApplicationVersion: [NSString stringWithFormat:@"%@ (%@)", version, architecture],
+        NSAboutPanelOptionApplicationName: aboutName,
+        NSAboutPanelOptionApplicationVersion: [NSString stringWithFormat:@"%@ (%@) (Fork)", version, architecture],
         NSAboutPanelOptionVersion: @""
     }];
+
+    void (^bringAboutToFront)(void) = ^{
+        NSWindow* aboutWindow = [NSApp keyWindow];
+        for (NSWindow* window in [NSApp windows]) {
+            if (![window isVisible]) continue;
+            NSString* className = NSStringFromClass([window class]);
+            if ([className containsString:@"About"] ||
+                [window.title isEqualToString:appName] ||
+                [window.title isEqualToString:aboutName]) {
+                aboutWindow = window;
+                break;
+            }
+        }
+
+        if (aboutWindow) {
+            [aboutWindow makeKeyAndOrderFront:nil];
+            [aboutWindow orderFrontRegardless];
+        }
+    };
+
+    [currentApp activateWithOptions:(NSApplicationActivateIgnoringOtherApps | NSApplicationActivateAllWindows)];
+    bringAboutToFront();
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [currentApp activateWithOptions:(NSApplicationActivateIgnoringOtherApps | NSApplicationActivateAllWindows)];
+        bringAboutToFront();
+    });
 }
 
 - (IBAction)openWidgetDir:(id)sender

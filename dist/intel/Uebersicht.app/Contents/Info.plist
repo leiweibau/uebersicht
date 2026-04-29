@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BuildMachineOSBuild</key>
+	<string>25E253</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>Übersicht</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>tracesOf.Uebersicht</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Übersicht</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.7.3</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>82</string>
+	<key>DTCompiler</key>
+	<string>com.apple.compilers.llvm.clang.1_0</string>
+	<key>DTPlatformBuild</key>
+	<string>25C58</string>
+	<key>DTPlatformName</key>
+	<string>macosx</string>
+	<key>DTPlatformVersion</key>
+	<string>26.2</string>
+	<key>DTSDKBuild</key>
+	<string>25C58</string>
+	<key>DTSDKName</key>
+	<string>macosx26.2</string>
+	<key>DTXcode</key>
+	<string>2630</string>
+	<key>DTXcodeBuild</key>
+	<string>17C529</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>12.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>A widget would like to control another app.</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>A widget would like to access your Media Library.</string>
+	<key>NSAppleScriptEnabled</key>
+	<true/>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>A widget would like to access Bluetooth.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>A widget would like to read your Calendar events.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>A widget would like to access your Calendar.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>A widget would like to create Calendar events.</string>
+	<key>NSHomeKitUsageDescription</key>
+	<string>A widget would like to make use of HomeKit.</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2019 Felix Hageloh. Released under the GNU General Public License v3.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>A widget would like to access your current locatiuon.</string>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>A widget would like to access your Photo Library.</string>
+	<key>NSPrincipalClass</key>
+	<string>UBApplication</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>A widget would like to access your Reminders.</string>
+	<key>NSSupportsAppNap</key>
+	<true/>
+	<key>OSAScriptingDefinition</key>
+	<string>Uebersicht.sdef</string>
+</dict>
+</plist>
